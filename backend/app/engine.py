@@ -140,6 +140,7 @@ def compute_electrification(
     direct_abated = site.annual_co2_tonnes * tech["thermal_replacement_fraction"]
     grid_emissions = annual_elec_mwh * site.grid_carbon_intensity_gco2_kwh / 1e6  # tCO2
     net_abated = max(direct_abated - grid_emissions, 0)
+    abatement_pct = (net_abated / site.annual_co2_tonnes) * 100 if site.annual_co2_tonnes > 0 else 0.0
 
     pv_costs = capex_total + _npv(opex_annual, lifetime, discount_rate)
     pv_abated = _npv(net_abated, lifetime, discount_rate)
@@ -157,7 +158,7 @@ def compute_electrification(
         cost_per_tco2_avoided=cost_per_tco2,
         capex_total_gbp=capex_total,
         opex_annual_gbp=opex_annual,
-        abatement_percentage=(net_abated / site.annual_co2_tonnes) * 100,
+        abatement_percentage=abatement_pct,
         residual_emissions_tco2=site.annual_co2_tonnes - net_abated,
         air_quality_score=air_quality_score,
         jobs_net_score=jobs_net,
