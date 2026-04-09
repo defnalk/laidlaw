@@ -1,6 +1,16 @@
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
 .venv/
+venv/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
 .DS_Store
 data/workshops.db
