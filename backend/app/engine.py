@@ -116,8 +116,12 @@ def compute_electrification(
     # IEA 2022 central value (~3.5). See data/assumptions.json
     # → heat_pump_cop_by_technology. Replaces the v0.1 COP=1 placeholder.
     cop_table = a["heat_pump_cop_by_technology"]
-    cop_node = cop_table.get(p.technology) or cop_table["electric_arc_furnace"]
+    cop_node = cop_table.get(p.technology)
+    if cop_node is None:
+        cop_node = cop_table["electric_arc_furnace"]
     cop = _val(cop_node)
+    if cop <= 0:
+        raise ValueError(f"Non-positive COP ({cop}) for technology {p.technology}")
     annual_elec_mwh = (replaced_thermal * 1000) / cop
     elec_cost = annual_elec_mwh * elec_price
 
@@ -184,7 +188,10 @@ def _infrastructure_readiness(site: Site, kind: str) -> float:
     # H2 pipeline proximity is now country-indexed against the European Hydrogen
     # Backbone 2023 plan (replaces the v0.1 h2_prox=0.5 placeholder).
     h2_table = a["h2_pipeline_proximity_by_country"]
-    h2_prox = _val(h2_table.get(site.country) or h2_table["default"])
+    h2_node = h2_table.get(site.country)
+    if h2_node is None:
+        h2_node = h2_table["default"]
+    h2_prox = _val(h2_node)
     co2_prox = max(0.0, 1.0 - site.proximity_to_co2_storage_km / 500)
     supply = 0.6 if kind == "ccs" else 0.5
 
