@@ -1,0 +1,84 @@
+{
+  "_meta": {
+    "description": "Single source of truth for every numerical assumption. Each entry has a value, unit, and source citation. Edit freely; the engine reloads on restart.",
+    "last_updated": "2026-04-09"
+  },
+  "discount_rate_default": {
+    "value": 0.08,
+    "unit": "fraction",
+    "source": "IEA WEO 2023 — standard industrial DCF discount rate"
+  },
+  "project_lifetime_years": {
+    "value": 25,
+    "unit": "years",
+    "source": "IEA CCUS in Clean Energy Transitions 2020"
+  },
+  "ccs_capex_per_tco2_capacity": {
+    "steel":     {"low": 60,  "central": 90,  "high": 130, "unit": "GBP/tCO2/yr capacity", "source": "IEAGHG 2018 Iron & Steel CCS"},
+    "cement":    {"low": 50,  "central": 80,  "high": 120, "unit": "GBP/tCO2/yr capacity", "source": "IEA Cement Roadmap 2018"},
+    "chemicals": {"low": 70,  "central": 100, "high": 150, "unit": "GBP/tCO2/yr capacity", "source": "IEAGHG 2017 Chemicals CCS"}
+  },
+  "ccs_opex_fraction_of_capex": {
+    "value": 0.05,
+    "unit": "fraction/yr",
+    "source": "IEA CCUS 2020 — typical 4–6% of CAPEX/yr"
+  },
+  "energy_penalty_by_capture_tech": {
+    "amine":            {"value": 0.25, "unit": "fraction of thermal input", "source": "IEAGHG 2019 amine post-combustion"},
+    "oxy-fuel":         {"value": 0.18, "unit": "fraction of thermal input", "source": "IEAGHG 2020 oxy-fuel cement"},
+    "calcium-looping":  {"value": 0.15, "unit": "fraction of thermal input", "source": "IEAGHG 2021 calcium looping"}
+  },
+  "co2_transport_cost_per_tco2": {
+    "pipeline": {"value": 5,  "unit": "GBP/tCO2", "source": "ZEP 2011 transport cost report"},
+    "ship":     {"value": 15, "unit": "GBP/tCO2", "source": "ZEP 2011 ship transport"}
+  },
+  "co2_storage_cost_per_tco2": {
+    "saline_aquifer": {"value": 10, "unit": "GBP/tCO2", "source": "ZEP 2011 storage cost"},
+    "depleted_field": {"value": 6,  "unit": "GBP/tCO2", "source": "ZEP 2011 storage cost"}
+  },
+  "electrification_capex_per_gwh_thermal": {
+    "electric_arc_furnace": {"value": 0.35, "unit": "GBP_million/GWh/yr thermal replaced", "source": "IEA Iron & Steel Roadmap 2020"},
+    "e_cracker":            {"value": 0.55, "unit": "GBP_million/GWh/yr thermal replaced", "source": "Dechema 2019 e-cracker study"},
+    "electric_kiln":        {"value": 0.45, "unit": "GBP_million/GWh/yr thermal replaced", "source": "LEILAC project 2022 indicative"}
+  },
+  "electrolyser_efficiency": {
+    "value": 0.70,
+    "unit": "fraction (LHV)",
+    "source": "IRENA Green Hydrogen Cost 2020"
+  },
+  "h2_energy_content_mwh_per_tonne": {
+    "value": 33.3,
+    "unit": "MWh/tH2 (LHV)",
+    "source": "IEA H2 2019"
+  },
+  "default_grid_electricity_price_gbp_per_mwh": {
+    "value": 80,
+    "unit": "GBP/MWh",
+    "source": "Illustrative — replace with site-specific PPA"
+  },
+  "renewable_capacity_capex_gbp_per_mw": {
+    "value": 1100000,
+    "unit": "GBP/MW",
+    "source": "IRENA Renewable Power Generation Costs 2023"
+  },
+  "jobs_multipliers": {
+    "ccs":             {"construction_uplift": 0.30, "construction_years": 5, "operational_change": -0.05, "source": "Illustrative — calibrate from BEIS jobs studies"},
+    "electrification": {"construction_uplift": 0.45, "construction_years": 7, "operational_change": -0.10, "source": "Illustrative — calibrate from IRENA jobs annual"}
+  },
+  "infrastructure_readiness_weights": {
+    "grid_capacity":         0.30,
+    "h2_pipeline_proximity": 0.25,
+    "co2_storage_proximity": 0.25,
+    "supply_chain_maturity": 0.20,
+    "_note": "Weights must sum to 1.0. Adjust freely."
+  },
+  "decision_weights": {
+    "_note": "Weights for the multi-criteria decision algorithm in decision.py. Must sum to 1.0. Lower cost = better, higher abatement = better, etc.",
+    "cost_per_tco2":           0.30,
+    "abatement_percentage":    0.25,
+    "air_quality_score":       0.15,
+    "jobs_net_score":          0.10,
+    "infrastructure_readiness": 0.10,
+    "implementation_speed":    0.10
+  }
+}

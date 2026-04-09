@@ -1,0 +1,47 @@
+[
+  {
+    "id": "uk_steel_pt",
+    "name": "UK Integrated Steelworks (Port Talbot scale)",
+    "sector": "steel",
+    "country": "UK",
+    "annual_co2_tonnes": 5000000,
+    "current_fuel_mix": {"coke": 0.75, "natural_gas": 0.20, "electricity": 0.05},
+    "thermal_demand_gwh": 18000,
+    "electrical_demand_gwh": 1500,
+    "workforce_size": 4000,
+    "proximity_to_co2_storage_km": 250,
+    "grid_carbon_intensity_gco2_kwh": 180,
+    "local_air_quality_index": 55,
+    "_source": "Loosely modelled on Tata Port Talbot, public IEA Iron & Steel data"
+  },
+  {
+    "id": "uk_cement_north",
+    "name": "UK Cement Plant (1 MtCO2/yr)",
+    "sector": "cement",
+    "country": "UK",
+    "annual_co2_tonnes": 1000000,
+    "current_fuel_mix": {"coal": 0.40, "petcoke": 0.35, "waste_fuels": 0.25},
+    "thermal_demand_gwh": 3200,
+    "electrical_demand_gwh": 220,
+    "workforce_size": 250,
+    "proximity_to_co2_storage_km": 180,
+    "grid_carbon_intensity_gco2_kwh": 180,
+    "local_air_quality_index": 45,
+    "_source": "Indicative UK cement plant — MPA / IEA Cement Roadmap"
+  },
+  {
+    "id": "eu_ethylene_cracker",
+    "name": "European Ethylene Cracker (1.5 MtCO2/yr)",
+    "sector": "chemicals",
+    "country": "NL",
+    "annual_co2_tonnes": 1500000,
+    "current_fuel_mix": {"natural_gas": 0.60, "tail_gas": 0.40},
+    "thermal_demand_gwh": 6000,
+    "electrical_demand_gwh": 400,
+    "workforce_size": 600,
+    "proximity_to_co2_storage_km": 90,
+    "grid_carbon_intensity_gco2_kwh": 230,
+    "local_air_quality_index": 50,
+    "_source": "Indicative NL cracker — Dechema e-cracker study 2019"
+  }
+]

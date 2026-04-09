@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Laidlaw IDPC — Decarbonisation Pathway Comparator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+  :root { --bg:#0b0f14; --panel:#141b22; --ink:#e6edf3; --muted:#8b98a5; --accent:#5ad1a0; --warn:#f0a84b; }
+  *{box-sizing:border-box} body{margin:0;font-family:-apple-system,Segoe UI,Inter,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  header{padding:1.2rem 2rem;border-bottom:1px solid #1f2933;display:flex;justify-content:space-between;align-items:center}
+  h1{margin:0;font-size:1.2rem;font-weight:600}
+  .tag{font-size:.75rem;color:var(--muted)}
+  main{display:grid;grid-template-columns:280px 1fr;gap:1.5rem;padding:1.5rem 2rem}
+  .panel{background:var(--panel);border-radius:10px;padding:1.2rem}
+  .panel h2{margin:0 0 .8rem;font-size:.95rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  label{display:block;font-size:.8rem;color:var(--muted);margin:.6rem 0 .2rem}
+  select,input{width:100%;background:#0b0f14;color:var(--ink);border:1px solid #2a3540;border-radius:6px;padding:.5rem .6rem;font-size:.9rem}
+  button{background:var(--accent);color:#06231a;border:0;border-radius:6px;padding:.7rem 1rem;font-weight:600;cursor:pointer;width:100%;margin-top:1rem}
+  button.secondary{background:#2a3540;color:var(--ink)}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1rem}
+  .metric{background:#0b0f14;border:1px solid #1f2933;border-radius:8px;padding:.8rem}
+  .metric .label{font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .metric .val{font-size:1.3rem;font-weight:600;margin-top:.2rem}
+  .col2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .narrative{background:#0b0f14;border-left:3px solid var(--accent);padding:.8rem 1rem;border-radius:0 6px 6px 0;font-size:.95rem}
+  .caveat{background:#1a1410;border-left:3px solid var(--warn);padding:.6rem 1rem;border-radius:0 6px 6px 0;font-size:.85rem;color:#f0d4a8;margin-top:.4rem}
+  .step{background:#0b0f14;border:1px solid #1f2933;border-radius:6px;padding:.7rem;margin:.5rem 0;font-size:.85rem}
+  .step .src{color:var(--muted);font-size:.7rem;margin-top:.3rem}
+  .recommend{font-size:1.1rem;font-weight:600;color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Laidlaw IDPC</h1>
+    <div class="tag">Industrial Decarbonisation Pathway Comparator — CCS vs Electrification</div>
+  </div>
+  <div class="tag">Laidlaw Scholars · Imperial College London</div>
+</header>
+
+<main>
+  <aside class="panel">
+    <h2>Scenario</h2>
+    <label>Site</label>
+    <select id="site"></select>
+
+    <h2 style="margin-top:1.4rem">CCS pathway</h2>
+    <label>Capture rate</label>
+    <input id="capRate" type="number" min="0" max="1" step="0.05" value="0.9" />
+    <label>Capture tech</label>
+    <select id="capTech">
+      <option value="amine">Amine</option>
+      <option value="oxy-fuel">Oxy-fuel</option>
+      <option value="calcium-looping">Calcium looping</option>
+    </select>
+    <label>Transport</label>
+    <select id="transport"><option value="pipeline">Pipeline</option><option value="ship">Ship</option></select>
+    <label>Storage</label>
+    <select id="storage"><option value="saline_aquifer">Saline aquifer</option><option value="depleted_field">Depleted field</option></select>
+
+    <h2 style="margin-top:1.4rem">Electrification pathway</h2>
+    <label>Technology</label>
+    <select id="elecTech">
+      <option value="electric_arc_furnace">Electric arc furnace (steel)</option>
+      <option value="electric_kiln">Electric kiln (cement)</option>
+      <option value="e_cracker">E-cracker (chemicals)</option>
+    </select>
+    <label>Hydrogen demand (t/yr)</label>
+    <input id="h2" type="number" min="0" value="0" />
+    <label>Electricity price (£/MWh)</label>
+    <input id="price" type="number" min="0" value="80" />
+
+    <button onclick="run()">Compare pathways</button>
+    <button class="secondary" onclick="hotReload()">Reload assumptions.json</button>
+  </aside>
+
+  <section>
+    <div class="panel" style="margin-bottom:1rem">
+      <h2>Result</h2>
+      <div id="recommend" class="recommend">Configure a scenario and click Compare.</div>
+      <div id="narrative" class="narrative" style="margin-top:.8rem;display:none"></div>
+    </div>
+
+    <div class="col2">
+      <div class="panel">
+        <h2>CCS metrics</h2>
+        <div id="ccsMetrics" class="metrics"></div>
+      </div>
+      <div class="panel">
+        <h2>Electrification metrics</h2>
+        <div id="elecMetrics" class="metrics"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:1rem"><h2>Multi-criteria comparison</h2><div id="radar" style="height:380px"></div></div>
+    <div class="panel" style="margin-top:1rem"><h2>Calculation trace (academic mode)</h2><div id="explain"></div></div>
+    <div class="panel" style="margin-top:1rem"><h2>Caveats</h2><div id="caveats"></div></div>
+  </section>
+</main>
+
+<script>
+const API = location.origin.replace(/\/ui\/?$/, '');
+
+async function loadSites() {
+  const r = await fetch(`${API}/sites`); const sites = await r.json();
+  const sel = document.getElementById('site');
+  sites.forEach(s => sel.add(new Option(`${s.name} (${s.sector})`, s.id)));
+}
+
+function payload() {
+  return {
+    ccs: {
+      capture_rate: +document.getElementById('capRate').value,
+      capture_tech: document.getElementById('capTech').value,
+      transport: document.getElementById('transport').value,
+      storage: document.getElementById('storage').value,
+    },
+    electrification: {
+      technology: document.getElementById('elecTech').value,
+      hydrogen_tonnes_yr: +document.getElementById('h2').value,
+      hydrogen_source: 'dedicated_renewable',
+      electricity_price_gbp_mwh: +document.getElementById('price').value,
+    },
+  };
+}
+
+function metricCard(label, val) {
+  return `<div class="metric"><div class="label">${label}</div><div class="val">${val}</div></div>`;
+}
+function fmt(n, d=0) { return isFinite(n) ? Number(n).toLocaleString(undefined,{maximumFractionDigits:d}) : '∞'; }
+
+async function run() {
+  const siteId = document.getElementById('site').value;
+  const body = payload();
+  const r = await fetch(`${API}/compare/${siteId}`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({...body.ccs, ...{}}) // FastAPI takes the two as separate body params
+  });
+  // FastAPI multi-body: need to send both keyed
+  const r2 = await fetch(`${API}/compare/${siteId}`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ccs: body.ccs, electrification: body.electrification})
+  });
+  const data = await r2.json();
+  if (data.detail) { document.getElementById('recommend').textContent = 'Error: '+JSON.stringify(data.detail); return; }
+  render(data);
+  trace(siteId, body);
+}
+
+function render(d) {
+  document.getElementById('recommend').innerHTML = `Recommended: <span style="text-transform:uppercase">${d.recommended}</span> &nbsp; <span class="tag">(score CCS ${d.decision_score_ccs.toFixed(2)} vs Elec ${d.decision_score_electrification.toFixed(2)})</span>`;
+  const nv = document.getElementById('narrative'); nv.style.display='block'; nv.textContent = d.narrative;
+
+  const m = (x) => [
+    metricCard('£/tCO₂ avoided', '£'+fmt(x.cost_per_tco2_avoided)),
+    metricCard('Abatement', fmt(x.abatement_percentage,1)+'%'),
+    metricCard('Timeline', fmt(x.implementation_timeline_years,1)+' yr'),
+    metricCard('CAPEX', '£'+fmt(x.capex_total_gbp/1e6)+'M'),
+    metricCard('OPEX/yr', '£'+fmt(x.opex_annual_gbp/1e6)+'M'),
+    metricCard('Air quality', fmt(x.air_quality_score,2)),
+  ].join('');
+  document.getElementById('ccsMetrics').innerHTML = m(d.ccs);
+  document.getElementById('elecMetrics').innerHTML = m(d.electrification);
+
+  const cats = ['Cost (inv)','Abatement','Air quality','Jobs','Infra readiness','Speed (inv)'];
+  const norm = (x) => [
+    1 - Math.min(x.cost_per_tco2_avoided/300,1),
+    x.abatement_percentage/100,
+    x.air_quality_score,
+    Math.max(0, x.jobs_net_score+0.2)/0.5,
+    x.infrastructure_readiness,
+    1 - Math.min(x.implementation_timeline_years/15,1),
+  ];
+  Plotly.newPlot('radar', [
+    {type:'scatterpolar', r:[...norm(d.ccs), norm(d.ccs)[0]], theta:[...cats,cats[0]], name:'CCS', fill:'toself'},
+    {type:'scatterpolar', r:[...norm(d.electrification), norm(d.electrification)[0]], theta:[...cats,cats[0]], name:'Electrification', fill:'toself'},
+  ], {polar:{bgcolor:'#0b0f14',radialaxis:{range:[0,1],color:'#8b98a5'},angularaxis:{color:'#e6edf3'}}, paper_bgcolor:'#141b22', font:{color:'#e6edf3'}, margin:{t:20,b:20}}, {displayModeBar:false});
+
+  document.getElementById('caveats').innerHTML = d.caveats.map(c=>`<div class="caveat">${c}</div>`).join('');
+}
+
+async function trace(siteId, body) {
+  const r = await fetch(`${API}/explain/${siteId}`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ccs: body.ccs, electrification: body.electrification})
+  });
+  const t = await r.json();
+  const render = (steps, title) => `<h3 style="font-size:.9rem;color:#5ad1a0;margin:.6rem 0">${title}</h3>` +
+    steps.map(s=>`<div class="step"><b>${s.step}</b><div>$${s.latex}$</div><div class="src">Source: ${s.source}</div></div>`).join('');
+  document.getElementById('explain').innerHTML = render(t.ccs,'CCS trace') + render(t.electrification,'Electrification trace');
+  if (window.renderMathInElement) renderMathInElement(document.getElementById('explain'),{delimiters:[{left:'$',right:'$',display:false}]});
+}
+
+async function hotReload() {
+  await fetch(`${API}/reload`, {method:'POST'});
+  alert('Assumptions reloaded from data/assumptions.json');
+}
+
+loadSites();
+</script>
+</body>
+</html>

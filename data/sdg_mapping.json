@@ -1,0 +1,8 @@
+{
+  "cost_per_tco2":            [9, 12],
+  "abatement_percentage":     [13],
+  "air_quality_score":        [3, 11],
+  "jobs_net_score":           [8],
+  "infrastructure_readiness": [7, 9],
+  "implementation_timeline":  [13]
+}

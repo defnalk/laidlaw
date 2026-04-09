@@ -1,0 +1,13 @@
+{
+  "_meta": "Catalogue of intervention technologies. Add new entries here to extend the model — the engine discovers them dynamically.",
+  "ccs": {
+    "amine":           {"label": "Amine post-combustion", "default_capture_rate": 0.90, "max_capture_rate": 0.95, "trl": 9},
+    "oxy-fuel":        {"label": "Oxy-fuel combustion",   "default_capture_rate": 0.95, "max_capture_rate": 0.98, "trl": 7},
+    "calcium-looping": {"label": "Calcium looping",       "default_capture_rate": 0.90, "max_capture_rate": 0.95, "trl": 6}
+  },
+  "electrification": {
+    "electric_arc_furnace": {"label": "Electric arc furnace",  "applicable_sectors": ["steel"],     "thermal_replacement_fraction": 1.0},
+    "e_cracker":            {"label": "Electric steam cracker", "applicable_sectors": ["chemicals"], "thermal_replacement_fraction": 1.0},
+    "electric_kiln":        {"label": "Electric cement kiln",   "applicable_sectors": ["cement"],    "thermal_replacement_fraction": 0.85}
+  }
+}

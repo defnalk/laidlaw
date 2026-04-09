@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Laidlaw IDPC — Workshop Mode</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+  *{box-sizing:border-box} html,body{margin:0;height:100%;background:#0b0f14;color:#fff;font-family:-apple-system,Segoe UI,Inter,sans-serif}
+  body{display:flex;flex-direction:column;padding:3vh 4vw}
+  h1{font-size:3.5vw;margin:0 0 1vh}
+  .sub{font-size:1.4vw;color:#8b98a5;margin-bottom:3vh}
+  .setup,.live{display:none}
+  .setup.active,.live.active{display:block}
+  label{display:block;font-size:1.4vw;margin:1.5vh 0 .4vh;color:#8b98a5}
+  input,select{font-size:2vw;padding:1vh 1.2vw;background:#141b22;color:#fff;border:1px solid #2a3540;border-radius:.6vw;width:100%;max-width:600px}
+  button{font-size:2vw;padding:1.5vh 2vw;background:#5ad1a0;color:#06231a;border:0;border-radius:.6vw;font-weight:700;cursor:pointer;margin-top:2vh}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:3vw;flex:1;min-height:0}
+  .panel{background:#141b22;border-radius:1vw;padding:3vh 3vw;display:flex;flex-direction:column}
+  .panel h2{font-size:2vw;margin:0 0 2vh;color:#5ad1a0;text-transform:uppercase;letter-spacing:.05em}
+  .vote-buttons{display:grid;grid-template-columns:1fr 1fr;gap:1.5vw;margin-top:2vh}
+  .vote-buttons button{font-size:2.2vw;padding:3vh 1vw}
+  .vote-buttons button.ccs{background:#f0a84b;color:#1a0e00}
+  .vote-buttons button.elec{background:#5ad1a0;color:#06231a}
+  .vote-buttons button.neither{background:#5a6470;color:#fff}
+  .vote-buttons button.both{background:#a566f0;color:#fff}
+  .tally{font-size:5vw;font-weight:700;text-align:center;margin:3vh 0}
+  .row{display:flex;justify-content:space-around;font-size:1.6vw;margin-top:2vh}
+  .row div{text-align:center}
+  .row .n{font-size:3vw;font-weight:700;color:#5ad1a0}
+  .code{font-family:monospace;background:#0b0f14;padding:.5vh 1vw;border-radius:.4vw;border:1px solid #2a3540}
+</style>
+</head>
+<body>
+
+<div class="setup active" id="setup">
+  <h1>Workshop mode</h1>
+  <div class="sub">Industrial Transitions, Human Stories — participatory decarbonisation workshop</div>
+
+  <label>Workshop code (share with the room)</label>
+  <input id="code" value="PT24" />
+
+  <label>Site under discussion</label>
+  <select id="site"></select>
+
+  <label>Your role</label>
+  <select id="role">
+    <option value="student">Student</option>
+    <option value="resident">Local resident</option>
+    <option value="worker">Worker</option>
+    <option value="industry">Industry</option>
+    <option value="policy">Policymaker</option>
+    <option value="other">Other</option>
+  </select>
+
+  <button onclick="startWorkshop()">Start workshop</button>
+</div>
+
+<div class="live" id="live">
+  <h1 id="liveTitle">Workshop <span class="code" id="liveCode"></span></h1>
+  <div class="sub" id="siteName"></div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Cast your vote</h2>
+      <div style="font-size:1.6vw;color:#8b98a5">Which pathway should this site take?</div>
+      <div class="vote-buttons">
+        <button class="ccs" onclick="vote('ccs')">Carbon capture<br><span style="font-size:1.2vw;font-weight:400">Retrofit existing plant</span></button>
+        <button class="elec" onclick="vote('electrification')">Electrification<br><span style="font-size:1.2vw;font-weight:400">Switch to clean electricity</span></button>
+        <button class="both" onclick="vote('both')">Both<br><span style="font-size:1.2vw;font-weight:400">Hybrid approach</span></button>
+        <button class="neither" onclick="vote('neither')">Neither<br><span style="font-size:1.2vw;font-weight:400">Different approach needed</span></button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Live results</h2>
+      <div class="tally" id="totalVotes">0 votes</div>
+      <div id="chart" style="flex:1;min-height:30vh"></div>
+      <div class="row" id="byRole"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = location.origin.replace(/\/ui\/?.*$/, '');
+let CODE, SITE, ROLE;
+
+async function loadSites() {
+  const r = await fetch(`${API}/sites`); const sites = await r.json();
+  const sel = document.getElementById('site');
+  sites.forEach(s => sel.add(new Option(`${s.name} (${s.sector})`, s.id)));
+}
+loadSites();
+
+async function startWorkshop() {
+  CODE = document.getElementById('code').value.trim();
+  SITE = document.getElementById('site').value;
+  ROLE = document.getElementById('role').value;
+  await fetch(`${API}/workshop/${CODE}/start?site_id=${SITE}`, {method:'POST'});
+  document.getElementById('setup').classList.remove('active');
+  document.getElementById('live').classList.add('active');
+  document.getElementById('liveCode').textContent = CODE;
+  document.getElementById('siteName').textContent = document.querySelector(`#site option[value="${SITE}"]`).textContent;
+  poll();
+  setInterval(poll, 2000);
+}
+
+async function vote(choice) {
+  await fetch(`${API}/workshop/${CODE}/vote`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({role: ROLE, choice})
+  });
+  poll();
+}
+
+async function poll() {
+  const r = await fetch(`${API}/workshop/${CODE}`);
+  if (!r.ok) return;
+  const s = await r.json();
+  const t = s.tally;
+  document.getElementById('totalVotes').textContent = `${t.total} vote${t.total===1?'':'s'}`;
+
+  const labels = ['ccs','electrification','both','neither'];
+  const colors = ['#f0a84b','#5ad1a0','#a566f0','#5a6470'];
+  const values = labels.map(l => t.by_choice[l] || 0);
+  Plotly.newPlot('chart', [{
+    type:'bar', x: labels.map(l=>l.toUpperCase()), y: values,
+    marker:{color:colors}, text: values, textposition:'outside'
+  }], {
+    paper_bgcolor:'#141b22', plot_bgcolor:'#141b22',
+    font:{color:'#fff', size:16}, margin:{t:20,l:40,r:20,b:60},
+    yaxis:{gridcolor:'#2a3540'}
+  }, {displayModeBar:false});
+
+  const roleHtml = Object.entries(t.by_role).map(([role, choices]) => {
+    const total = Object.values(choices).reduce((a,b)=>a+b,0);
+    return `<div><div class="n">${total}</div>${role}</div>`;
+  }).join('');
+  document.getElementById('byRole').innerHTML = roleHtml;
+}
+</script>
+</body>
+</html>
