@@ -77,6 +77,21 @@
     "supply_chain_maturity": 0.20,
     "_note": "Weights must sum to 1.0. Adjust freely."
   },
+  "heat_pump_cop_by_technology": {
+    "_note": "Replaces the COP=1 placeholder. COP > 1 reduces electricity demand for the thermal replacement fraction; resistive technologies stay at 1.0.",
+    "electric_arc_furnace": {"value": 1.0, "unit": "-", "source": "Resistive — direct electric heating, no COP gain."},
+    "electric_kiln":        {"value": 1.0, "unit": "-", "source": "Resistive — direct electric heating, no COP gain."},
+    "e_cracker":            {"value": 1.0, "unit": "-", "source": "Resistive — direct electric cracking, no COP gain."},
+    "industrial_heat_pump": {"value": 3.5, "unit": "-", "source": "IEA The Future of Heat Pumps 2022 — typical industrial COP at 100–150 °C sink"}
+  },
+  "h2_pipeline_proximity_by_country": {
+    "_note": "Replaces the h2_prox=0.5 placeholder. 1.0 = on a planned/operational H2 backbone, 0.0 = no nearby pipeline. Calibrate against the European Hydrogen Backbone (EHB) 2023 plan.",
+    "UK":             {"value": 0.55, "source": "EHB 2023 — UK East Coast Cluster + HyNet only."},
+    "Germany":        {"value": 0.85, "source": "EHB 2023 — dense planned backbone."},
+    "Netherlands":    {"value": 0.90, "source": "EHB 2023 — Rotterdam/HyTransport hub."},
+    "France":         {"value": 0.65, "source": "EHB 2023 — Dunkirk + Fos clusters."},
+    "default":        {"value": 0.40, "source": "EHB 2023 — fallback for unlisted countries."}
+  },
   "decision_weights": {
     "_note": "Weights for the multi-criteria decision algorithm in decision.py. Must sum to 1.0. Lower cost = better, higher abatement = better, etc.",
     "cost_per_tco2":           0.30,

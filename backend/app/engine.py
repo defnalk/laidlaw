@@ -6,8 +6,6 @@ data-driven and auditable.
 """
 from __future__ import annotations
 
-from typing import Optional
-
 from .data_loader import assumptions, technologies
 from .models import (
     CCSPathway,
@@ -15,7 +13,6 @@ from .models import (
     PathwayMetrics,
     Site,
 )
-
 
 # ---------- helpers ---------------------------------------------------------
 
@@ -27,17 +24,17 @@ def _npv(annual_cashflow: float, years: int, discount_rate: float) -> float:
     return annual_cashflow * (1 - (1 + r) ** -years) / r
 
 
-def _val(node) -> float:
+def _val(node: object) -> float:
     """Extract numeric value from an assumptions entry (handles {value: ...})."""
     if isinstance(node, dict) and "value" in node:
         return float(node["value"])
-    return float(node)
+    return float(node)  # type: ignore[arg-type]
 
 
 # ---------- CCS -------------------------------------------------------------
 
 def compute_ccs(
-    site: Site, p: CCSPathway, discount_rate: Optional[float] = None
+    site: Site, p: CCSPathway, discount_rate: float | None = None
 ) -> PathwayMetrics:
     a = assumptions()
     discount_rate = discount_rate if discount_rate is not None else _val(a["discount_rate_default"])
@@ -94,7 +91,7 @@ def compute_ccs(
 # ---------- Electrification -------------------------------------------------
 
 def compute_electrification(
-    site: Site, p: ElectrificationPathway, discount_rate: Optional[float] = None
+    site: Site, p: ElectrificationPathway, discount_rate: float | None = None
 ) -> PathwayMetrics:
     a = assumptions()
     techs = technologies()["electrification"]
@@ -114,8 +111,14 @@ def compute_electrification(
     capex_per_gwh = _val(a["electrification_capex_per_gwh_thermal"][p.technology]) * 1e6
     capex_total = capex_per_gwh * replaced_thermal
 
-    # Annual electricity required (assume COP=1 thermal->electric for simplicity; refine in v2)
-    annual_elec_mwh = replaced_thermal * 1000
+    # Annual electricity required: thermal replaced / COP. Resistive technologies
+    # (EAF, e-kiln, e-cracker) have COP=1; industrial heat pumps draw on the
+    # IEA 2022 central value (~3.5). See data/assumptions.json
+    # → heat_pump_cop_by_technology. Replaces the v0.1 COP=1 placeholder.
+    cop_table = a["heat_pump_cop_by_technology"]
+    cop_node = cop_table.get(p.technology) or cop_table["electric_arc_furnace"]
+    cop = _val(cop_node)
+    annual_elec_mwh = (replaced_thermal * 1000) / cop
     elec_cost = annual_elec_mwh * elec_price
 
     # Hydrogen
@@ -176,7 +179,11 @@ def _infrastructure_readiness(site: Site, kind: str) -> float:
     w = a["infrastructure_readiness_weights"]
 
     grid_cap = max(0.0, 1.0 - site.electrical_demand_gwh / 5000)  # rough proxy
-    h2_prox = 0.5  # placeholder, refine with real pipeline data later
+
+    # H2 pipeline proximity is now country-indexed against the European Hydrogen
+    # Backbone 2023 plan (replaces the v0.1 h2_prox=0.5 placeholder).
+    h2_table = a["h2_pipeline_proximity_by_country"]
+    h2_prox = _val(h2_table.get(site.country) or h2_table["default"])
     co2_prox = max(0.0, 1.0 - site.proximity_to_co2_storage_km / 500)
     supply = 0.6 if kind == "ccs" else 0.5
 
