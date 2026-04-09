@@ -65,12 +65,12 @@ def _applicable_cards(site: Site) -> list[dict]:
     out: list[dict] = []
 
     # All CCS techs are applicable to all sectors (with varying suitability)
-    for key, t in techs["ccs"].items():
+    for _key, t in techs["ccs"].items():
         if "card" in t:
             out.append(t["card"])
 
     # Electrification techs are sector-gated
-    for key, t in techs["electrification"].items():
+    for _key, t in techs["electrification"].items():
         if site.sector in t.get("applicable_sectors", []) and "card" in t:
             out.append(t["card"])
 

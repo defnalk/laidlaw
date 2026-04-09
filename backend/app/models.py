@@ -1,7 +1,8 @@
 """Pydantic domain models for sites, pathways, and comparison results."""
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 Sector = Literal["steel", "cement", "chemicals"]
@@ -37,7 +38,7 @@ class ElectrificationPathway(BaseModel):
     technology: str  # key from technologies.json electrification block
     hydrogen_tonnes_yr: float = 0
     hydrogen_source: Literal["grid_electrolysis", "dedicated_renewable"] = "dedicated_renewable"
-    electricity_price_gbp_mwh: Optional[float] = None  # override default
+    electricity_price_gbp_mwh: float | None = None  # override default
 
 
 class PathwayMetrics(BaseModel):

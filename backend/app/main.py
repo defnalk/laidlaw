@@ -1,13 +1,13 @@
 """FastAPI app — endpoints for sites, pathways, comparison, sensitivity."""
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from . import cards, data_loader, explain, workshop
 from .decision import compare
@@ -88,7 +88,7 @@ def compare_site(
         electrification=m_elec,
         decision_score_ccs=s_ccs,
         decision_score_electrification=s_elec,
-        recommended=verdict,
+        recommended=verdict,  # type: ignore[arg-type]
         narrative=explain.narrative(site, m_ccs, m_elec, verdict),
         caveats=explain.CAVEATS,
     )
