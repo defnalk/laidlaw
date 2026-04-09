@@ -4,6 +4,11 @@ All notable changes to **laidlaw** are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is loosely based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+> **Note on pre-0.4 versions:** the project did not adopt semver tagging until
+> `v0.4.0`. The 0.1 → 0.3 sections below are a retroactive reconstruction of
+> the work that landed before tagging began, grouped by feature area for
+> readability. Only `v0.4.0` and later correspond to actual git tags.
+
 ## [0.4.0] — Engineering pass
 
 ### Added
