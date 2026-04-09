@@ -201,7 +201,10 @@ class CommentIn(BaseModel):
 
 @app.post("/workshop/{code}/start")
 def workshop_start(code: str, site_id: str) -> dict:
-    return workshop.get_or_create(code, site_id)
+    try:
+        return workshop.get_or_create(code, site_id)
+    except ValueError as e:
+        raise HTTPException(409, str(e))
 
 
 @app.post("/workshop/{code}/vote")
