@@ -191,6 +191,26 @@ local residents, and workers a structured voice in decarbonisation debates.
 
 ---
 
+## Roadmap / Status
+
+| Area | Status | Notes |
+|---|---|---|
+| Calculation engine (CCS + electrification) | **Stable** — `v0.4` | All numerical assumptions live in `data/assumptions.json` with citations. |
+| Heat-pump COP table | **Stable** — `v0.4` | Per-technology COP from IEA *Future of Heat Pumps* 2022. |
+| H₂ pipeline proximity | **Stable** — `v0.4` | Country-indexed against the European Hydrogen Backbone 2023 plan. |
+| Decision algorithm + narrative | **Stable** — `v0.3` | Weights in `assumptions.json`, fully data-driven. |
+| FastAPI backend | **Stable** — `v0.2` | Compare / explain / workshop endpoints, full TestClient coverage. |
+| Docker + CI | **Stable** — `v0.4` | Multi-stage build, ruff + mypy + pytest matrix, Docker build job. |
+| Static frontend | **MVP** — `v0.2` | Two static HTML pages; an SPA refresh is on the v0.5 list. |
+| Strict typing across `main.py` | **Planned** — `v0.5` | Engine + models already strict; FastAPI surface is the next pass. |
+| Sensitivity analysis (Monte Carlo over assumption bounds) | **Planned** — `v0.5` | Uses the `low` / `central` / `high` triples already in CCS CAPEX. |
+| Real GIS-based H₂ + CO₂ proximity | **Planned** — `v0.6` | Replace the country index with EHB / CCUS-network shapefiles. |
+| Per-pathway emission factors per region | **Planned** — `v0.6` | Hourly grid CO₂ intensity instead of annual averages. |
+
+See [`CHANGELOG.md`](CHANGELOG.md) for the full release history.
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
