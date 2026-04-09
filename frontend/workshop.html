@@ -29,6 +29,12 @@
   .row div{text-align:center}
   .row .n{font-size:3vw;font-weight:700;color:#5ad1a0}
   .code{font-family:monospace;background:#0b0f14;padding:.5vh 1vw;border-radius:.4vw;border:1px solid #2a3540}
+  textarea{width:100%;background:#0b0f14;color:#fff;border:1px solid #2a3540;border-radius:.4vw;padding:1vh 1vw;font-size:1.4vw;font-family:inherit;resize:vertical;min-height:8vh}
+  .commentList{margin-top:1.5vh;max-height:25vh;overflow-y:auto}
+  .commentItem{background:#0b0f14;border-left:.3vw solid #5ad1a0;padding:.8vh 1vw;margin-bottom:.8vh;border-radius:0 .4vw .4vw 0;font-size:1.2vw}
+  .commentItem .role{font-size:.9vw;color:#8b98a5;text-transform:uppercase;letter-spacing:.05em}
+  .commentItem .text{margin-top:.4vh;color:#e6edf3}
+  button.small{font-size:1.3vw;padding:1vh 2vw;margin-top:1vh}
 </style>
 </head>
 <body>
@@ -63,20 +69,28 @@
   <div class="grid">
     <div class="panel">
       <h2>Cast your vote</h2>
-      <div style="font-size:1.6vw;color:#8b98a5">Which pathway should this site take?</div>
+      <div style="font-size:1.4vw;color:#8b98a5">Which pathway should this site take?</div>
       <div class="vote-buttons">
-        <button class="ccs" onclick="vote('ccs')">Carbon capture<br><span style="font-size:1.2vw;font-weight:400">Retrofit existing plant</span></button>
-        <button class="elec" onclick="vote('electrification')">Electrification<br><span style="font-size:1.2vw;font-weight:400">Switch to clean electricity</span></button>
-        <button class="both" onclick="vote('both')">Both<br><span style="font-size:1.2vw;font-weight:400">Hybrid approach</span></button>
-        <button class="neither" onclick="vote('neither')">Neither<br><span style="font-size:1.2vw;font-weight:400">Different approach needed</span></button>
+        <button class="ccs" onclick="vote('ccs')">Carbon capture<br><span style="font-size:1.1vw;font-weight:400">Retrofit existing plant</span></button>
+        <button class="elec" onclick="vote('electrification')">Electrification<br><span style="font-size:1.1vw;font-weight:400">Switch to clean electricity</span></button>
+        <button class="both" onclick="vote('both')">Both<br><span style="font-size:1.1vw;font-weight:400">Hybrid approach</span></button>
+        <button class="neither" onclick="vote('neither')">Neither<br><span style="font-size:1.1vw;font-weight:400">Different approach needed</span></button>
       </div>
+
+      <h2 style="margin-top:2.5vh">Share a thought</h2>
+      <div style="font-size:1.2vw;color:#8b98a5">What worries or excites you about this transition?</div>
+      <textarea id="commentText" placeholder="e.g. 'My dad works there — what happens to those jobs?'"></textarea>
+      <button class="small" onclick="postComment()">Submit comment</button>
     </div>
 
     <div class="panel">
       <h2>Live results</h2>
       <div class="tally" id="totalVotes">0 votes</div>
-      <div id="chart" style="flex:1;min-height:30vh"></div>
+      <div id="chart" style="min-height:25vh"></div>
       <div class="row" id="byRole"></div>
+
+      <h2 style="margin-top:2vh">Voices in the room</h2>
+      <div class="commentList" id="commentList"></div>
     </div>
   </div>
 </div>
@@ -137,6 +151,27 @@ async function poll() {
     return `<div><div class="n">${total}</div>${role}</div>`;
   }).join('');
   document.getElementById('byRole').innerHTML = roleHtml;
+
+  const cl = document.getElementById('commentList');
+  cl.innerHTML = (s.comments || []).map(c =>
+    `<div class="commentItem"><div class="role">${c.role}</div><div class="text">${escapeHtml(c.text)}</div></div>`
+  ).join('') || '<div style="color:#8b98a5;font-size:1.1vw">No comments yet — be the first to share.</div>';
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+async function postComment() {
+  const ta = document.getElementById('commentText');
+  const text = ta.value.trim();
+  if (!text) return;
+  await fetch(`${API}/workshop/${CODE}/comment`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({role: ROLE, text})
+  });
+  ta.value = '';
+  poll();
 }
 </script>
 </body>

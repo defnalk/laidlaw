@@ -98,6 +98,7 @@
     </div>
 
     <div class="panel" style="margin-top:1rem"><h2>Multi-criteria comparison</h2><div id="radar" style="height:380px"></div></div>
+    <div class="panel" style="margin-top:1rem"><h2>Sensitivity tornado (£/tCO₂ swing)</h2><div id="tornado" style="height:300px"></div><div class="tag" style="font-size:.7rem;color:var(--muted);margin-top:.4rem">Which input parameter swings the headline cost the most? Longer bars = higher leverage.</div></div>
     <div class="panel" style="margin-top:1rem"><h2>Calculation trace (academic mode)</h2><div id="explain"></div></div>
     <div class="panel" style="margin-top:1rem"><h2>Caveats</h2><div id="caveats"></div></div>
   </section>
@@ -150,6 +151,23 @@ async function run() {
   if (data.detail) { document.getElementById('recommend').textContent = 'Error: '+JSON.stringify(data.detail); return; }
   render(data);
   trace(siteId, body);
+  drawTornado(siteId);
+}
+
+async function drawTornado(siteId) {
+  const r = await fetch(`${API}/tornado/${siteId}`);
+  const t = await r.json();
+  const params = t.rows.map(r => r.param);
+  Plotly.newPlot('tornado', [
+    {type:'bar', orientation:'h', name:'CCS swing',  x: t.rows.map(r=>r.ccs_swing),  y: params, marker:{color:'#f0a84b'}},
+    {type:'bar', orientation:'h', name:'Elec swing', x: t.rows.map(r=>r.elec_swing), y: params, marker:{color:'#5ad1a0'}},
+  ], {
+    barmode:'group', paper_bgcolor:'#141b22', plot_bgcolor:'#141b22',
+    font:{color:'#e6edf3'}, margin:{t:20,l:140,r:20,b:40},
+    xaxis:{title:'£/tCO₂ swing', gridcolor:'#2a3540'},
+    yaxis:{automargin:true},
+    legend:{orientation:'h', y:-0.2}
+  }, {displayModeBar:false});
 }
 
 function render(d) {

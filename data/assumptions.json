@@ -23,6 +23,11 @@
     "unit": "fraction/yr",
     "source": "IEA CCUS 2020 — typical 4–6% of CAPEX/yr"
   },
+  "industrial_fuel_price_gbp_per_mwh": {
+    "value": 30,
+    "unit": "GBP/MWh thermal",
+    "source": "Indicative UK industrial gas price 2023 — replace with site-specific contract price"
+  },
   "energy_penalty_by_capture_tech": {
     "amine":            {"value": 0.25, "unit": "fraction of thermal input", "source": "IEAGHG 2019 amine post-combustion"},
     "oxy-fuel":         {"value": 0.18, "unit": "fraction of thermal input", "source": "IEAGHG 2020 oxy-fuel cement"},

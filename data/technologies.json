@@ -1,13 +1,88 @@
 {
-  "_meta": "Catalogue of intervention technologies. Add new entries here to extend the model — the engine discovers them dynamically.",
+  "_meta": "Catalogue of intervention technologies. Each entry's `card` block drives the printable workshop cards — add an entry here and a card appears automatically.",
   "ccs": {
-    "amine":           {"label": "Amine post-combustion", "default_capture_rate": 0.90, "max_capture_rate": 0.95, "trl": 9},
-    "oxy-fuel":        {"label": "Oxy-fuel combustion",   "default_capture_rate": 0.95, "max_capture_rate": 0.98, "trl": 7},
-    "calcium-looping": {"label": "Calcium looping",       "default_capture_rate": 0.90, "max_capture_rate": 0.95, "trl": 6}
+    "amine": {
+      "label": "Amine post-combustion",
+      "default_capture_rate": 0.90,
+      "max_capture_rate": 0.95,
+      "trl": 9,
+      "card": {
+        "tag": "CCS",
+        "title": "Retrofit with Amine Capture",
+        "stats": [["Capture", "90%"], ["Cost £/tCO₂", "£80–120"], ["Build time", "6–8 yr"]],
+        "description": "Bolt a post-combustion capture plant onto the existing site. Keep current jobs and assets; ship CO₂ to offshore storage.",
+        "pros": ["Preserves existing jobs & assets", "Mature technology (TRL 9)", "Fast vs. full rebuild"],
+        "cons": ["10% residual stack emissions", "No local air-quality benefit", "Long-term CO₂ storage liability"]
+      }
+    },
+    "oxy-fuel": {
+      "label": "Oxy-fuel combustion",
+      "default_capture_rate": 0.95,
+      "max_capture_rate": 0.98,
+      "trl": 7,
+      "card": {
+        "tag": "CCS",
+        "title": "Retrofit with Oxy-fuel Capture",
+        "stats": [["Capture", "95%"], ["Energy penalty", "~18%"], ["TRL", "7"]],
+        "description": "Burn fuel in pure oxygen to produce a near-pure CO₂ stream that's cheap to capture. Lower penalty than amines.",
+        "pros": ["Higher capture rate", "Lower energy penalty", "Compatible with cement"],
+        "cons": ["Less mature than amine", "Requires air-separation unit", "Still combustion-based"]
+      }
+    },
+    "calcium-looping": {
+      "label": "Calcium looping",
+      "default_capture_rate": 0.90,
+      "max_capture_rate": 0.95,
+      "trl": 6,
+      "card": {
+        "tag": "CCS",
+        "title": "Calcium-Looping Capture",
+        "stats": [["Capture", "90%"], ["TRL", "6"], ["Build time", "7–9 yr"]],
+        "description": "Use limestone to absorb CO₂ at high temperature. Particularly suited to cement plants where CaO is already in the process.",
+        "pros": ["Synergy with cement chemistry", "Cheap sorbent", "High temperature heat recovery"],
+        "cons": ["Lower TRL", "Sorbent degradation", "Larger plant footprint"]
+      }
+    }
   },
   "electrification": {
-    "electric_arc_furnace": {"label": "Electric arc furnace",  "applicable_sectors": ["steel"],     "thermal_replacement_fraction": 1.0},
-    "e_cracker":            {"label": "Electric steam cracker", "applicable_sectors": ["chemicals"], "thermal_replacement_fraction": 1.0},
-    "electric_kiln":        {"label": "Electric cement kiln",   "applicable_sectors": ["cement"],    "thermal_replacement_fraction": 0.85}
+    "electric_arc_furnace": {
+      "label": "Electric arc furnace",
+      "applicable_sectors": ["steel"],
+      "thermal_replacement_fraction": 1.0,
+      "card": {
+        "tag": "ELEC",
+        "title": "Switch to Electric Arc Furnace",
+        "stats": [["Abatement", "~95%+"], ["Air quality", "Major ↑"], ["Build time", "8–10 yr"]],
+        "description": "Replace blast furnace with EAF using scrap or DRI feedstock. Eliminates coke and stack combustion entirely.",
+        "pros": ["Eliminates local air pollution", "Aligns with zero-carbon grid", "Future-proof"],
+        "cons": ["Huge new grid build-out", "Higher upfront CAPEX", "Workforce reskilling needed"]
+      }
+    },
+    "e_cracker": {
+      "label": "Electric steam cracker",
+      "applicable_sectors": ["chemicals"],
+      "thermal_replacement_fraction": 1.0,
+      "card": {
+        "tag": "ELEC",
+        "title": "Switch to Electric Steam Cracker",
+        "stats": [["Abatement", "~95%+"], ["Demo year", "~2025"], ["Build time", "9–12 yr"]],
+        "description": "Replace gas-fired furnaces with electrically heated cracking. BASF/SABIC/Linde demonstrator running in Ludwigshafen.",
+        "pros": ["Zero direct combustion CO₂", "Compact footprint", "Compatible with existing downstream"],
+        "cons": ["First-of-a-kind risk", "Massive electricity demand", "Limited operational data"]
+      }
+    },
+    "electric_kiln": {
+      "label": "Electric cement kiln",
+      "applicable_sectors": ["cement"],
+      "thermal_replacement_fraction": 0.85,
+      "card": {
+        "tag": "ELEC",
+        "title": "Switch to Electric Kiln",
+        "stats": [["Fuel abated", "85%"], ["Process CO₂", "Remains"], ["Build time", "8–11 yr"]],
+        "description": "LEILAC-style indirect electric heating eliminates fuel emissions. Note: 60% of cement CO₂ is calcination, not fuel — still needs capture.",
+        "pros": ["Eliminates fuel-side emissions", "Pure CO₂ stream from calciner", "Pairs with CCS for full abatement"],
+        "cons": ["Doesn't address calcination CO₂", "Pre-commercial", "Needs grid + storage"]
+      }
+    }
   }
 }

@@ -54,8 +54,8 @@ def compute_ccs(
     storage_cost = _val(a["co2_storage_cost_per_tco2"][p.storage]) * captured
 
     energy_penalty = _val(a["energy_penalty_by_capture_tech"][p.capture_tech])
-    # Crude fuel-cost proxy: penalty * thermal demand * a nominal £30/MWh fuel price.
-    fuel_penalty_cost = energy_penalty * site.thermal_demand_gwh * 1000 * 30
+    fuel_price = _val(a["industrial_fuel_price_gbp_per_mwh"])
+    fuel_penalty_cost = energy_penalty * site.thermal_demand_gwh * 1000 * fuel_price
 
     opex_annual = capex_total * opex_capex_frac + transport_cost + storage_cost + fuel_penalty_cost
 

@@ -94,6 +94,20 @@ def compare_site(
     )
 
 
+_DEFAULT_ELEC_TECH = {
+    "steel": "electric_arc_furnace",
+    "cement": "electric_kiln",
+    "chemicals": "e_cracker",
+}
+
+
+def _default_pathways(site: Site) -> tuple[CCSPathway, ElectrificationPathway]:
+    return (
+        CCSPathway(capture_rate=0.9, capture_tech="amine", transport="pipeline", storage="saline_aquifer"),
+        ElectrificationPathway(technology=_DEFAULT_ELEC_TECH[site.sector], hydrogen_tonnes_yr=0),
+    )
+
+
 @app.get("/sensitivity/{site_id}")
 def sensitivity(
     site_id: str,
@@ -102,26 +116,63 @@ def sensitivity(
     hi: float = 0.12,
     step: float = 0.01,
 ) -> dict:
-    """Sweep a parameter and return cost/tCO2 curves for both pathways.
-
-    Currently supports param=discount_rate. Extend by adding branches.
-    """
+    """Sweep one parameter and return cost/tCO₂ curves for both pathways."""
     site = _site(site_id)
-    # default pathways for the sweep
-    ccs = CCSPathway(capture_rate=0.9, capture_tech="amine", transport="pipeline", storage="saline_aquifer")
-    elec = ElectrificationPathway(
-        technology={"steel": "electric_arc_furnace", "cement": "electric_kiln", "chemicals": "e_cracker"}[site.sector],
-        hydrogen_tonnes_yr=0,
-    )
+    ccs, elec = _default_pathways(site)
 
     xs, ccs_y, elec_y = [], [], []
     x = lo
     while x <= hi + 1e-9:
         xs.append(round(x, 4))
-        ccs_y.append(compute_ccs(site, ccs, discount_rate=x).cost_per_tco2_avoided)
-        elec_y.append(compute_electrification(site, elec, discount_rate=x).cost_per_tco2_avoided)
+        if param == "discount_rate":
+            ccs_y.append(compute_ccs(site, ccs, discount_rate=x).cost_per_tco2_avoided)
+            elec_y.append(compute_electrification(site, elec, discount_rate=x).cost_per_tco2_avoided)
+        elif param == "capture_rate":
+            ccs_y.append(compute_ccs(site, CCSPathway(**{**ccs.model_dump(), "capture_rate": x})).cost_per_tco2_avoided)
+            elec_y.append(compute_electrification(site, elec).cost_per_tco2_avoided)
+        elif param == "electricity_price":
+            ccs_y.append(compute_ccs(site, ccs).cost_per_tco2_avoided)
+            elec_y.append(compute_electrification(
+                site, ElectrificationPathway(**{**elec.model_dump(), "electricity_price_gbp_mwh": x})
+            ).cost_per_tco2_avoided)
+        else:
+            raise HTTPException(400, f"Unknown sensitivity param: {param}")
         x += step
     return {"param": param, "x": xs, "ccs": ccs_y, "electrification": elec_y}
+
+
+@app.get("/tornado/{site_id}")
+def tornado(site_id: str) -> dict:
+    """Return swing magnitudes for cost/tCO₂ across multiple parameters.
+
+    Each parameter is swept low/high and the resulting £/tCO₂ delta is
+    reported per pathway. The frontend renders this as a tornado chart.
+    """
+    site = _site(site_id)
+    ccs, elec = _default_pathways(site)
+
+    sweeps = [
+        ("discount_rate", 0.04, 0.12),
+        ("capture_rate",  0.70, 0.99),
+        ("electricity_price", 40, 140),
+    ]
+
+    out = []
+    for name, lo, hi in sweeps:
+        s_lo = sensitivity(site_id, param=name, lo=lo, hi=hi, step=hi - lo)
+        out.append({
+            "param": name,
+            "low": lo,
+            "high": hi,
+            "ccs_low": s_lo["ccs"][0],
+            "ccs_high": s_lo["ccs"][-1],
+            "elec_low": s_lo["electrification"][0],
+            "elec_high": s_lo["electrification"][-1],
+            "ccs_swing": abs(s_lo["ccs"][-1] - s_lo["ccs"][0]),
+            "elec_swing": abs(s_lo["electrification"][-1] - s_lo["electrification"][0]),
+        })
+    out.sort(key=lambda r: max(r["ccs_swing"], r["elec_swing"]), reverse=True)
+    return {"site_id": site_id, "rows": out}
 
 
 @app.get("/cards/{site_id}", response_class=HTMLResponse)
@@ -145,39 +196,31 @@ class CommentIn(BaseModel):
 
 @app.post("/workshop/{code}/start")
 def workshop_start(code: str, site_id: str) -> dict:
-    s = workshop.get_or_create(code, site_id)
-    return {"code": s.code, "site_id": s.site_id}
+    return workshop.get_or_create(code, site_id)
 
 
 @app.post("/workshop/{code}/vote")
 def workshop_vote(code: str, vote: VoteIn) -> dict:
     try:
-        s = workshop.cast_vote(code, vote.role, vote.choice)  # type: ignore[arg-type]
+        return workshop.cast_vote(code, vote.role, vote.choice)  # type: ignore[arg-type]
     except KeyError:
         raise HTTPException(404, "Workshop not started — call /workshop/{code}/start first")
-    return s.tally()
 
 
 @app.post("/workshop/{code}/comment")
 def workshop_comment(code: str, comment: CommentIn) -> dict:
     try:
-        s = workshop.add_comment(code, comment.role, comment.text)  # type: ignore[arg-type]
+        return workshop.add_comment(code, comment.role, comment.text)  # type: ignore[arg-type]
     except KeyError:
         raise HTTPException(404, "Workshop not started")
-    return {"comments": len(s.comments)}
 
 
 @app.get("/workshop/{code}")
 def workshop_state(code: str) -> dict:
-    s = workshop.get(code)
+    s = workshop.state(code)
     if s is None:
         raise HTTPException(404, "No such workshop")
-    return {
-        "code": s.code,
-        "site_id": s.site_id,
-        "tally": s.tally(),
-        "comments": s.comments,
-    }
+    return s
 
 
 @app.post("/explain/{site_id}")
