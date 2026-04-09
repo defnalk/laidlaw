@@ -120,6 +120,11 @@ def sensitivity(
     site = _site(site_id)
     ccs, elec = _default_pathways(site)
 
+    if step <= 0:
+        raise HTTPException(400, "step must be > 0")
+    if hi < lo:
+        raise HTTPException(400, "hi must be >= lo")
+
     xs, ccs_y, elec_y = [], [], []
     x = lo
     while x <= hi + 1e-9:
