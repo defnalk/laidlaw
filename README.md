@@ -1,14 +1,14 @@
-# Laidlaw — Industrial Decarbonisation Pathway Comparator (IDPC)
+# Laidlaw: Industrial Decarbonisation Pathway Comparator (IDPC)
 
 [![CI](https://github.com/defnalk/laidlaw/actions/workflows/ci.yml/badge.svg)](https://github.com/defnalk/laidlaw/actions/workflows/ci.yml)
 
 Decision-support tool for the Laidlaw Scholars research project
 **"Carbon Capture vs. Electrification: Which Wins for Industry?"**
 
-Compares CCS retrofits vs. full electrification for hard-to-abate sectors
+Compares CCS retrofits vs. full electrification for hard to abate sectors
 (steel, cement, chemicals) on **cost, abatement, jobs, air quality,
 infrastructure readiness, and timeline**. Designed to support the
-*Industrial Transitions, Human Stories* Leadership in Action project —
+*Industrial Transitions, Human Stories* Leadership in Action project,
 giving students, residents, and workers a structured voice in
 decarbonisation decisions through participatory workshops.
 
@@ -20,16 +20,16 @@ decarbonisation decisions through participatory workshops.
 > to electric arc furnaces and green hydrogen?"*
 
 Most decarbonisation tools answer that question with a single number from a
-black-box model. This one is built around three commitments:
+black box model. This one is built around three commitments:
 
 1. **Every number is traceable.** No cost, penalty, or weight is hardcoded
-   in Python — they all live in `data/assumptions.json` with a citation
-   field. The `/explain` endpoint returns LaTeX-rendered calculation traces.
-2. **The tool is data-driven, not code-driven.** Add a new sector, capture
+   in Python: they all live in `data/assumptions.json` with a citation
+   field. The `/explain` endpoint returns LaTeX rendered calculation traces.
+2. **The tool is data driven, not code driven.** Add a new sector, capture
    technology, or pathway card by editing JSON. The engine discovers it.
-3. **It is decision-*support*, not a decision-*maker*.** Every result ships
+3. **It is decision *support*, not a decision *maker*.** Every result ships
    with caveats listing what the model does NOT capture (political
-   feasibility, social acceptance, supply-chain risk).
+   feasibility, social acceptance, supply chain risk).
 
 ---
 
@@ -48,7 +48,7 @@ flowchart LR
     subgraph Backend["backend/app — FastAPI"]
         L[data_loader.py]
         E[engine.py<br/>pure calc kernel]
-        D[decision.py<br/>multi-criteria score]
+        D[decision.py<br/>multi criteria score]
         X[explain.py<br/>LaTeX traces]
         C[cards.py<br/>printable PDFs]
         W[workshop.py<br/>votes + comments]
@@ -79,7 +79,7 @@ flowchart LR
 ```
 
 The engine is a **pure calculation kernel**: it reads parameters from
-`data_loader`, performs DCF / mass-balance / scoring maths, and returns
+`data_loader`, performs DCF / mass balance / scoring maths, and returns
 plain dataclasses. Every other module sits above it.
 
 ---
@@ -89,16 +89,16 @@ plain dataclasses. Every other module sits above it.
 | Route                       | Purpose                                            |
 |-----------------------------|----------------------------------------------------|
 | `/ui/`                      | Analyst dashboard (Plotly + KaTeX traces + tornado) |
-| `/ui/workshop.html`         | Workshop mode — projection-friendly live voting + comments |
+| `/ui/workshop.html`         | Workshop mode, projection friendly live voting + comments |
 | `/cards/{site_id}`          | Printable A5 pathway cards (Print → Save as PDF)   |
-| `/compare/{site_id}`        | POST: full side-by-side comparison + recommendation |
-| `/explain/{site_id}`        | POST: step-by-step LaTeX calculation trace        |
+| `/compare/{site_id}`        | POST: full side by side comparison + recommendation |
+| `/explain/{site_id}`        | POST: step by step LaTeX calculation trace        |
 | `/sensitivity/{site_id}`    | GET: sweep one parameter, return cost curves      |
-| `/tornado/{site_id}`        | GET: rank parameters by their cost-swing leverage |
+| `/tornado/{site_id}`        | GET: rank parameters by their cost swing leverage |
 | `/workshop/{code}`          | GET: live tally + comments (SQLite-backed)        |
 | `/assumptions`              | GET: full knowledge base with citations           |
-| `/reload`                   | POST: hot-reload JSON without restart             |
-| `/docs`                     | FastAPI auto-generated API docs                   |
+| `/reload`                   | POST: hot reload JSON without restart             |
+| `/docs`                     | FastAPI auto generated API docs                   |
 
 ---
 
@@ -126,19 +126,19 @@ pytest -q                              # 14 tests
 | Add a new industrial site                 | `data/sites.json`           |
 | Add a new capture or electrification tech | `data/technologies.json` (the `card` block automatically appears in the printable PDFs) |
 | Update an IEA / IEAGHG cost benchmark     | `data/assumptions.json`     |
-| Re-weight the decision algorithm          | `data/assumptions.json` → `decision_weights` |
+| Reweight the decision algorithm          | `data/assumptions.json` → `decision_weights` |
 | Tag a metric to a different SDG           | `data/sdg_mapping.json`     |
 
 Then `POST /reload` (or use the **Reload assumptions** button in the
 dashboard) to pick up changes without a restart. This means **workshop
-participants can re-weight the decision criteria live**, see the
+participants can reweight the decision criteria live**, see the
 recommendation flip in real time, and discuss why.
 
 ---
 
 ## The decision algorithm
 
-`backend/app/decision.py` implements a transparent weighted multi-criteria score:
+`backend/app/decision.py` implements a transparent weighted multi criteria score:
 
 ```
 score(pathway) = Σᵢ wᵢ · normalise(metricᵢ)
@@ -163,13 +163,13 @@ the body and the rest of the system keeps working.
 
 ---
 
-## Caveats — what this tool does NOT capture
+## Caveats: what this tool does NOT capture
 
 - Political feasibility & permitting risk
 - Social acceptance beyond a jobs proxy
-- Supply-chain and geopolitical risk for critical minerals / hydrogen
-- Behavioural change and demand-side measures
-- Plant-specific engineering constraints
+- Supply chain and geopolitical risk for critical minerals / hydrogen
+- Behavioural change and demand side measures
+- Plant specific engineering constraints
 
 These limitations are surfaced in every `/compare` response and on the
 dashboard. **Always present results alongside these caveats in workshops.**
@@ -180,12 +180,12 @@ dashboard. **Always present results alongside these caveats in workshops.**
 
 Built for the Laidlaw Scholars Leadership and Research Programme at
 Imperial College London. The research project investigates whether
-hard-to-abate sectors should retrofit existing plants with CCS or switch
+hard to abate sectors should retrofit existing plants with CCS or switch
 entirely to clean electricity, evaluating cost per tonne of CO₂ avoided,
 infrastructure changes, and social impacts including air quality and jobs.
 Outputs serve **SDGs 7, 9, 12, and 13**.
 
-The Leadership in Action project — *Industrial Transitions, Human Stories* —
+The Leadership in Action project, *Industrial Transitions, Human Stories*,
 uses this tool's Workshop Mode and printed Pathway Cards to give students,
 local residents, and workers a structured voice in decarbonisation debates.
 
@@ -213,4 +213,4 @@ See [`CHANGELOG.md`](CHANGELOG.md) for the full release history.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
