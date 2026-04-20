@@ -15,8 +15,17 @@ DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 
 
 def _load(name: str) -> Any:
-    with open(DATA_DIR / name) as f:
-        return json.load(f)
+    path = DATA_DIR / name
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(
+            f"Knowledge-base file {name!r} not found at {path}. "
+            f"Ensure the data/ directory is present alongside the backend."
+        ) from e
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in {path}: {e}") from e
 
 
 @lru_cache(maxsize=1)

@@ -63,12 +63,19 @@ def get_or_create(code: str, site_id: str) -> dict:
     with _conn() as c:
         row = c.execute("SELECT * FROM sessions WHERE code = ?", (code,)).fetchone()
         if row is None:
+            created_at = time()
             c.execute(
                 "INSERT INTO sessions(code, site_id, created_at) VALUES (?, ?, ?)",
-                (code, site_id, time()),
+                (code, site_id, created_at),
             )
-            return {"code": code, "site_id": site_id, "created_at": time()}
-        return dict(row)
+            return {"code": code, "site_id": site_id, "created_at": created_at}
+        existing = dict(row)
+        if existing["site_id"] != site_id:
+            raise ValueError(
+                f"Workshop {code} already exists for site {existing['site_id']!r}, "
+                f"cannot reuse code for site {site_id!r}"
+            )
+        return existing
 
 
 def get(code: str) -> dict | None:
